@@ -232,4 +232,43 @@ export const buildStyles = (accentColor: string): string => `
     padding: 4px 14px 8px;
     text-align: center;
   }
+
+  /* Markdown rendered inside assistant messages */
+  .message.assistant p {
+    margin: 0 0 6px;
+  }
+  .message.assistant p:last-child { margin-bottom: 0; }
+
+  .message.assistant ul,
+  .message.assistant ol {
+    margin: 4px 0 6px;
+    padding-left: 18px;
+  }
+  .message.assistant li { margin-bottom: 2px; }
+
+  .message.assistant a {
+    color: ${accentColor};
+    text-decoration: underline;
+    word-break: break-all;
+  }
+  .message.assistant a:hover { opacity: 0.8; }
+
+  .message.assistant strong { font-weight: 600; }
+  .message.assistant em { font-style: italic; }
+
+  .message.assistant code {
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 12px;
+    background: rgba(0, 0, 0, 0.08);
+    padding: 1px 4px;
+    border-radius: 3px;
+  }
+
+  .message.assistant h4,
+  .message.assistant h5,
+  .message.assistant h6 {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 6px 0 3px;
+  }
 `

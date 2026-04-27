@@ -2,14 +2,18 @@ import { h, Fragment } from "preact"
 import { useState, useEffect, useRef } from "preact/hooks"
 import { buildStyles } from "./styles.js"
 import { streamChat, fetchSiteConfig, type ChatMessage } from "./api.js"
+import { renderMarkdown } from "./markdown.js"
+
+const escapeUser = (s: string) =>
+  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>")
 
 interface WidgetProps {
   siteId: string
   serverUrl: string
-  shadowRoot: ShadowRoot
+  styleEl: HTMLStyleElement
 }
 
-export function Widget({ siteId, serverUrl, shadowRoot }: WidgetProps) {
+export function Widget({ siteId, serverUrl, styleEl }: WidgetProps) {
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState("")
@@ -19,21 +23,10 @@ export function Widget({ siteId, serverUrl, shadowRoot }: WidgetProps) {
   const [errorMsg, setErrorMsg] = useState("")
   const messagesBottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
-  const styleRef = useRef<HTMLStyleElement | null>(null)
 
-  // Inject initial styles into shadow DOM
+  // Update the pre-injected style element when accentColor changes
   useEffect(() => {
-    const style = document.createElement("style")
-    style.textContent = buildStyles(accentColor)
-    shadowRoot.insertBefore(style, shadowRoot.firstChild)
-    styleRef.current = style
-  }, [])
-
-  // Update styles when accentColor changes
-  useEffect(() => {
-    if (styleRef.current) {
-      styleRef.current.textContent = buildStyles(accentColor)
-    }
+    styleEl.textContent = buildStyles(accentColor)
   }, [accentColor])
 
   // Fetch site config and show greeting on first open
@@ -130,9 +123,11 @@ export function Widget({ siteId, serverUrl, shadowRoot }: WidgetProps) {
 
         <div class="messages" role="log" aria-live="polite">
           {messages.map((m, i) => (
-            <div key={i} class={`message ${m.role}`}>
-              {m.content}
-            </div>
+            <div
+              key={i}
+              class={`message ${m.role}`}
+              dangerouslySetInnerHTML={{ __html: m.role === "assistant" ? renderMarkdown(m.content) : escapeUser(m.content) }}
+            />
           ))}
           {isLastStreaming && (
             <div class="typing" aria-label="Assistant is typing">

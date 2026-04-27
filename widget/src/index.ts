@@ -1,5 +1,6 @@
 import { h, render } from "preact"
 import { Widget } from "./widget.js"
+import { buildStyles } from "./styles.js"
 
 function findOwnScriptTag(): HTMLScriptElement | null {
   if (document.currentScript instanceof HTMLScriptElement) {
@@ -33,8 +34,14 @@ function mount() {
 
   const shadow = host.attachShadow({ mode: "closed" })
 
+  // Inject styles BEFORE first render to prevent a flash of unstyled content.
+  // The widget receives the element and updates it when accentColor changes.
+  const styleEl = document.createElement("style")
+  styleEl.textContent = buildStyles("#6366f1")
+  shadow.appendChild(styleEl)
+
   render(
-    h(Widget, { siteId, serverUrl, shadowRoot: shadow }),
+    h(Widget, { siteId, serverUrl, styleEl }),
     shadow
   )
 }

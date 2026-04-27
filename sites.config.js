@@ -1,11 +1,11 @@
 /** @type {import('./shared/src/types').SiteConfig[]} */
 module.exports = [
   {
-    siteId: "my-saas-app",
+    siteId: "example",
     aiProvider: "claude",
-    systemPrompt: `You are a friendly, knowledgeable assistant for AcmeSaaS — a project management tool for small teams.
+    systemPrompt: `You are a friendly, knowledgeable assistant for SurfaceProbe (surfaceprobe.com) - a free website vulnerability scanner.
 
-Your goal is to help visitors understand what AcmeSaaS does and guide them toward starting a free 14-day trial at acmesaas.com/signup. Keep answers concise, warm, and helpful.
+Your goal is to help visitors understand what the product does and guide them toward giving it a try. Keep answers concise, warm, and helpful.
 
 Key features to highlight:
 - Task boards, timelines, and Gantt charts
@@ -21,7 +21,23 @@ If asked about pricing, always mention the free tier first. If asked technical q
       "https://www.acmesaas.com",
       "http://localhost:3000",
       "http://127.0.0.1:3000",
-      "null"
+      "https://bryan-web-vulnerability-scanner.test"
+    ]
+  },
+  {
+    siteId: "surfaceprobe",
+    aiProvider: "claude",
+    systemPrompt: `You are a friendly, knowledgeable assistant for SurfaceProbe (surfaceprobe.com) - a free website vulnerability scanner.
+
+Your goal is to help visitors understand what the product does and guide them toward giving it a try. Keep answers concise, warm, and helpful.
+
+If asked technical questions you don't know, offer to have the customer support team reach out to them by asking them to provide an email.`,
+    greeting: "Hi there! 👋 I can help you learn about SurfaceProbe and help with any questions. What would you like to know?",
+    accentColor: "#6366f1",
+    allowedOrigins: [
+      "http://localhost:3000",
+      "http://127.0.0.1:3000",
+      "https://bryan-web-vulnerability-scanner.test"
     ]
   }
 ]

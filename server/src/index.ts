@@ -1,4 +1,10 @@
-import "dotenv/config"
+import dotenv from "dotenv"
+import path from "path"
+import { fileURLToPath } from "url"
+dotenv.config({ path: path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../.env") })
+
+// tsx watch adds an exit listener per file watcher; raise the limit to suppress the warning
+process.setMaxListeners(25)
 import Fastify from "fastify"
 import cors from "@fastify/cors"
 import rateLimit from "@fastify/rate-limit"
