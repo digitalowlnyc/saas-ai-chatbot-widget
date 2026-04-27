@@ -36,6 +36,7 @@ If asked technical questions you don't know, offer to have the customer support 
     accentColor: "#6366f1",
     saveConversations: true,
     allowedOrigins: [
+      "https://surfaceprobe.com",
       "http://localhost:3000",
       "http://127.0.0.1:3000",
       "https://bryan-web-vulnerability-scanner.test"
