@@ -118,3 +118,88 @@
   "command": "ls /Users/work/.claude/projects/-Users-work-Conversions-Chatbot/memory/ 2>/dev/null || echo \"empty or missing\"",
   "exit_code": null
 }
+{
+  "timestamp": "2026-04-27T17:42:23Z",
+  "command": "mkdir -p ~/claude_custom/history/Users_work_Conversions-Chatbot",
+  "exit_code": null
+}
+{
+  "timestamp": "2026-04-27T17:53:51Z",
+  "command": "lsof -ti:4000 | xargs kill -9 2>/dev/null; sleep 1\n./node_modules/.bin/tsx server/src/index.ts &\nSERVER_PID=$!\nsleep 3\necho \"=== env check ===\"\ncurl -s http://localhost:4000/health\necho \"\"\nkill $SERVER_PID 2>/dev/null",
+  "exit_code": null
+}
+{
+  "timestamp": "2026-04-27T17:54:02Z",
+  "command": "curl -s -N -X POST http://localhost:4000/api/chat \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Origin: http://localhost:3000\" \\\n  -d '{\"siteId\":\"surfaceprobe\",\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}]}' &\nsleep 6\nlsof -ti:4000 | xargs kill -9 2>/dev/null",
+  "exit_code": null
+}
+{
+  "timestamp": "2026-04-27T17:54:14Z",
+  "command": "lsof -ti:4000 | xargs kill -9 2>/dev/null; sleep 1\n./node_modules/.bin/tsx server/src/index.ts > /tmp/server.log 2>&1 &\nSERVER_PID=$!\nsleep 3\ncurl -s -N -X POST http://localhost:4000/api/chat \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Origin: http://localhost:3000\" \\\n  -d '{\"siteId\":\"surfaceprobe\",\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}]}' 2>&1\nkill $SERVER_PID 2>/dev/null",
+  "exit_code": null
+}
+{
+  "timestamp": "2026-04-27T17:57:03Z",
+  "command": "grep -n \"message\\.\" /Users/work/Conversions-Chatbot/widget/src/widget.tsx | head -20",
+  "exit_code": null
+}
+{
+  "timestamp": "2026-04-27T17:57:06Z",
+  "command": "grep -n \"m\\.content\\|message.*role\\|class.*message\" /Users/work/Conversions-Chatbot/widget/src/widget.tsx",
+  "exit_code": null
+}
+{
+  "timestamp": "2026-04-27T17:57:22Z",
+  "command": "tail -5 /Users/work/Conversions-Chatbot/widget/src/styles.ts",
+  "exit_code": null
+}
+{
+  "timestamp": "2026-04-27T17:57:32Z",
+  "command": "npm run build -w widget 2>&1",
+  "exit_code": null
+}
+{
+  "timestamp": "2026-04-27T18:00:11Z",
+  "command": "npm run build -w widget 2>&1",
+  "exit_code": null
+}
+{
+  "timestamp": "2026-04-27T18:03:07Z",
+  "command": "npm run build -w widget 2>&1",
+  "exit_code": null
+}
+{
+  "timestamp": "2026-04-27T18:04:53Z",
+  "command": "npm run build -w widget 2>&1 | tail -5",
+  "exit_code": null
+}
+{
+  "timestamp": "2026-04-27T18:10:45Z",
+  "command": "npm install better-sqlite3 -w server 2>&1 | tail -4 && npm install @types/better-sqlite3 -w server --save-dev 2>&1 | tail -4",
+  "exit_code": null
+}
+{
+  "timestamp": "2026-04-27T18:11:06Z",
+  "command": "mkdir -p /Users/work/Conversions-Chatbot/server/src/storage",
+  "exit_code": null
+}
+{
+  "timestamp": "2026-04-27T18:13:28Z",
+  "command": "npm run build -w shared 2>&1 && npm run build -w widget 2>&1 | tail -6",
+  "exit_code": null
+}
+{
+  "timestamp": "2026-04-27T18:16:44Z",
+  "command": "lsof -ti:4000 | xargs kill -9 2>/dev/null; sleep 1\n./node_modules/.bin/tsx server/src/index.ts > /tmp/server.log 2>&1 &\nSERVER_PID=$!\nsleep 3\n\necho \"=== health ===\"\ncurl -s http://localhost:4000/health\n\necho \"\"\necho \"=== save a conversation ===\"\ncurl -s -N -X POST http://localhost:4000/api/chat \\\n  -H \"Content-Type: application/json\" \\\n  -H \"Origin: http://localhost:3000\" \\\n  -d '{\"siteId\":\"surfaceprobe\",\"messages\":[{\"role\":\"user\",\"content\":\"Is SurfaceProbe free?\"}],\"conversationId\":\"test-conv-1\"}' \\\n  | grep -E \"done|error\" | head -1\n\necho \"\"\necho \"=== admin list (with auth) ===\"\ncurl -s -u \":localdev\" http://localhost:4000/admin \\\n  | grep -o 'test-conv-1[^<]*' | head -1\n\necho \"\"\necho \"=== admin list (no auth) ===\"\ncurl -s -o /dev/null -w \"HTTP %{http_code}\" http://localhost:4000/admin\n\nkill $SERVER_PID 2>/dev/null",
+  "exit_code": null
+}
+{
+  "timestamp": "2026-04-27T18:16:47Z",
+  "command": "lsof -ti:4000 | xargs kill -9 2>/dev/null; echo done",
+  "exit_code": null
+}
+{
+  "timestamp": "2026-04-27T18:21:21Z",
+  "command": "npm run build -w widget 2>&1 | tail -5",
+  "exit_code": null
+}

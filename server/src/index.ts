@@ -11,8 +11,11 @@ import rateLimit from "@fastify/rate-limit"
 import { loadSiteConfig } from "./config.js"
 import { chatRoutes } from "./routes/chat.js"
 import { widgetRoute } from "./routes/widget.js"
+import { adminRoutes } from "./routes/admin.js"
+import { createRepository } from "./storage/index.js"
 
 const siteConfigs = loadSiteConfig()
+const repo = createRepository()
 
 const fastify = Fastify({
   logger: {
@@ -47,8 +50,9 @@ await fastify.register(rateLimit, {
   }
 })
 
-await fastify.register(chatRoutes, { siteConfigs })
+await fastify.register(chatRoutes, { siteConfigs, repo })
 await fastify.register(widgetRoute)
+await fastify.register(adminRoutes, { repo })
 
 fastify.get("/health", async () => ({ status: "ok", sites: [...siteConfigs.keys()] }))
 

@@ -1,9 +1,11 @@
 import type { FastifyPluginAsync } from "fastify"
 import { createProvider } from "../providers/base.js"
 import type { SiteConfigMap, ChatRequest, StreamChunk } from "../types.js"
+import type { ConversationRepository } from "../storage/index.js"
 
 interface ChatRouteOptions {
   siteConfigs: SiteConfigMap
+  repo: ConversationRepository
 }
 
 export const chatRoutes: FastifyPluginAsync<ChatRouteOptions> = async (fastify, opts) => {
@@ -13,7 +15,8 @@ export const chatRoutes: FastifyPluginAsync<ChatRouteOptions> = async (fastify, 
     if (!config) return reply.code(404).send({ error: "Site not found" })
     return {
       greeting: config.greeting,
-      accentColor: config.accentColor
+      accentColor: config.accentColor,
+      saveConversations: config.saveConversations ?? false
     }
   })
 
@@ -24,6 +27,7 @@ export const chatRoutes: FastifyPluginAsync<ChatRouteOptions> = async (fastify, 
         required: ["siteId", "messages"],
         properties: {
           siteId: { type: "string" },
+          conversationId: { type: "string" },
           messages: {
             type: "array",
             items: {
@@ -40,20 +44,18 @@ export const chatRoutes: FastifyPluginAsync<ChatRouteOptions> = async (fastify, 
       }
     }
   }, async (request, reply) => {
-    const { siteId, messages } = request.body
+    const { siteId, messages, conversationId } = request.body
 
     const config = opts.siteConfigs.get(siteId)
     if (!config) {
       return reply.code(404).send({ error: `Unknown siteId: ${siteId}` })
     }
 
-    // Validate origin — "null" covers file:// and sandboxed iframes in dev
     const origin = request.headers.origin ?? "null"
     if (!config.allowedOrigins.includes(origin)) {
       return reply.code(403).send({ error: "Origin not allowed" })
     }
 
-    // Must use raw response for SSE — Fastify's serialization layer doesn't support it
     reply.raw.writeHead(200, {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
@@ -63,12 +65,32 @@ export const chatRoutes: FastifyPluginAsync<ChatRouteOptions> = async (fastify, 
     })
 
     const provider = await createProvider(config)
+    let assistantContent = ""
+
     try {
       for await (const delta of provider.stream(messages, config.systemPrompt)) {
+        assistantContent += delta
         const chunk: StreamChunk = { type: "delta", content: delta }
         reply.raw.write(`data: ${JSON.stringify(chunk)}\n\n`)
       }
       reply.raw.write(`data: ${JSON.stringify({ type: "done" } satisfies StreamChunk)}\n\n`)
+
+      // Save exchange after successful stream
+      if (config.saveConversations && conversationId && messages.length > 0) {
+        const userMessage = messages[messages.length - 1]
+        if (userMessage.role === "user") {
+          try {
+            opts.repo.saveMessages({
+              conversationId,
+              siteId,
+              userContent: userMessage.content,
+              assistantContent
+            })
+          } catch (err) {
+            fastify.log.error({ err }, "Failed to save conversation")
+          }
+        }
+      }
     } catch (err) {
       const error = err instanceof Error ? err.message : "Stream error"
       reply.raw.write(`data: ${JSON.stringify({ type: "error", error } satisfies StreamChunk)}\n\n`)

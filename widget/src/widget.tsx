@@ -1,7 +1,7 @@
 import { h, Fragment } from "preact"
 import { useState, useEffect, useRef } from "preact/hooks"
 import { buildStyles } from "./styles.js"
-import { streamChat, fetchSiteConfig, type ChatMessage } from "./api.js"
+import { streamChat, fetchSiteConfig, getOrCreateConversationId, type ChatMessage } from "./api.js"
 import { renderMarkdown } from "./markdown.js"
 
 const escapeUser = (s: string) =>
@@ -20,9 +20,12 @@ export function Widget({ siteId, serverUrl, styleEl }: WidgetProps) {
   const [streaming, setStreaming] = useState(false)
   const [initialized, setInitialized] = useState(false)
   const [accentColor, setAccentColor] = useState("#6366f1")
+  const [saveConversations, setSaveConversations] = useState(false)
+  const [disclaimerDismissed, setDisclaimerDismissed] = useState(false)
   const [errorMsg, setErrorMsg] = useState("")
   const messagesBottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const conversationId = useRef(getOrCreateConversationId(siteId))
 
   // Update the pre-injected style element when accentColor changes
   useEffect(() => {
@@ -36,6 +39,7 @@ export function Widget({ siteId, serverUrl, styleEl }: WidgetProps) {
     fetchSiteConfig(serverUrl, siteId).then(config => {
       if (config) {
         setAccentColor(config.accentColor)
+        setSaveConversations(config.saveConversations)
         setMessages([{ role: "assistant", content: config.greeting }])
       } else {
         setMessages([{ role: "assistant", content: "Hi! How can I help you today?" }])
@@ -58,17 +62,17 @@ export function Widget({ siteId, serverUrl, styleEl }: WidgetProps) {
     if (!text || streaming) return
 
     setErrorMsg("")
+    setDisclaimerDismissed(true)
     const userMsg: ChatMessage = { role: "user", content: text }
     const newMessages = [...messages, userMsg]
     setMessages(newMessages)
     setInput("")
     setStreaming(true)
 
-    // Append empty assistant bubble to stream into
     setMessages(prev => [...prev, { role: "assistant", content: "" }])
 
     try {
-      for await (const chunk of streamChat(serverUrl, siteId, newMessages)) {
+      for await (const chunk of streamChat(serverUrl, siteId, newMessages, conversationId.current)) {
         if (chunk.type === "delta" && chunk.content) {
           setMessages(prev => {
             const updated = [...prev]
@@ -79,7 +83,6 @@ export function Widget({ siteId, serverUrl, styleEl }: WidgetProps) {
         }
         if (chunk.type === "error") {
           setErrorMsg(chunk.error ?? "Something went wrong. Please try again.")
-          // Remove empty assistant bubble
           setMessages(prev => {
             const updated = [...prev]
             if (updated[updated.length - 1].content === "") updated.pop()
@@ -106,12 +109,12 @@ export function Widget({ siteId, serverUrl, styleEl }: WidgetProps) {
   function handleInput(e: Event) {
     const ta = e.target as HTMLTextAreaElement
     setInput(ta.value)
-    // Auto-resize
     ta.style.height = "auto"
     ta.style.height = `${Math.min(ta.scrollHeight, 100)}px`
   }
 
   const isLastStreaming = streaming && messages.length > 0 && messages[messages.length - 1].content === ""
+  const showDisclaimer = saveConversations && !disclaimerDismissed && messages.length > 0
 
   return (
     <Fragment>
@@ -138,6 +141,12 @@ export function Widget({ siteId, serverUrl, styleEl }: WidgetProps) {
           )}
           <div ref={messagesBottomRef} />
         </div>
+
+        {showDisclaimer && (
+          <div class="disclaimer">
+            💬 Conversations may be saved for customer support purposes.
+          </div>
+        )}
 
         {errorMsg && <div class="error-msg">{errorMsg}</div>}
 

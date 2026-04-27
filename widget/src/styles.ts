@@ -226,6 +226,15 @@ export const buildStyles = (accentColor: string): string => `
     outline-offset: 2px;
   }
 
+  .disclaimer {
+    font-size: 11px;
+    color: #94a3b8;
+    text-align: center;
+    padding: 6px 14px;
+    border-top: 1px solid #f1f5f9;
+    background: #fafafa;
+  }
+
   .error-msg {
     font-size: 12px;
     color: #ef4444;

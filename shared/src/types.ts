@@ -5,6 +5,7 @@ export interface SiteConfig {
   greeting: string
   accentColor: string
   allowedOrigins: string[]
+  saveConversations?: boolean
 }
 
 export interface ChatMessage {
@@ -15,6 +16,7 @@ export interface ChatMessage {
 export interface ChatRequest {
   siteId: string
   messages: ChatMessage[]
+  conversationId?: string
 }
 
 export interface StreamChunk {
@@ -26,4 +28,5 @@ export interface StreamChunk {
 export interface SitePublicConfig {
   greeting: string
   accentColor: string
+  saveConversations: boolean
 }

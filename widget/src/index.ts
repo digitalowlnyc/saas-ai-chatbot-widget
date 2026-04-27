@@ -6,12 +6,23 @@ function findOwnScriptTag(): HTMLScriptElement | null {
   if (document.currentScript instanceof HTMLScriptElement) {
     return document.currentScript
   }
-  // Fallback for async/deferred: find the last script with data-site-id
   const scripts = document.querySelectorAll<HTMLScriptElement>("script[data-site-id]")
   return scripts[scripts.length - 1] ?? null
 }
 
-function mount() {
+async function isReachable(serverUrl: string): Promise<boolean> {
+  try {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 4000)
+    const res = await fetch(`${serverUrl}/health`, { signal: controller.signal })
+    clearTimeout(timeout)
+    return res.ok
+  } catch {
+    return false
+  }
+}
+
+async function mount() {
   const scriptTag = findOwnScriptTag()
   if (!scriptTag) {
     console.warn("[chatbot-widget] Could not find <script data-site-id>")
@@ -24,9 +35,11 @@ function mount() {
     return
   }
 
-  // Derive server URL from the script's own src so the widget always talks
-  // back to the same host it was loaded from — no hardcoded URLs needed.
   const serverUrl = new URL(scriptTag.src).origin
+
+  if (!await isReachable(serverUrl)) {
+    return
+  }
 
   const host = document.createElement("div")
   host.id = "chatbot-widget-host"
@@ -35,7 +48,6 @@ function mount() {
   const shadow = host.attachShadow({ mode: "closed" })
 
   // Inject styles BEFORE first render to prevent a flash of unstyled content.
-  // The widget receives the element and updates it when accentColor changes.
   const styleEl = document.createElement("style")
   styleEl.textContent = buildStyles("#6366f1")
   shadow.appendChild(styleEl)

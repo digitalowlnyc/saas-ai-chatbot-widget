@@ -12,14 +12,15 @@ export interface StreamChunk {
 export async function* streamChat(
   serverUrl: string,
   siteId: string,
-  messages: ChatMessage[]
+  messages: ChatMessage[],
+  conversationId: string
 ): AsyncGenerator<StreamChunk> {
   let response: Response
   try {
     response = await fetch(`${serverUrl}/api/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ siteId, messages })
+      body: JSON.stringify({ siteId, messages, conversationId })
     })
   } catch {
     yield { type: "error", error: "Could not reach the server. Please try again." }
@@ -65,7 +66,7 @@ export async function* streamChat(
 export async function fetchSiteConfig(
   serverUrl: string,
   siteId: string
-): Promise<{ greeting: string; accentColor: string } | null> {
+): Promise<{ greeting: string; accentColor: string; saveConversations: boolean } | null> {
   try {
     const res = await fetch(`${serverUrl}/api/site-config/${siteId}`)
     if (!res.ok) return null
@@ -73,4 +74,13 @@ export async function fetchSiteConfig(
   } catch {
     return null
   }
+}
+
+export function getOrCreateConversationId(siteId: string): string {
+  const key = `chatbot-conv-${siteId}`
+  const existing = sessionStorage.getItem(key)
+  if (existing) return existing
+  const id = crypto.randomUUID()
+  sessionStorage.setItem(key, id)
+  return id
 }
