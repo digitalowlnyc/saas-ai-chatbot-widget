@@ -1,0 +1,14 @@
+{
+  "name": "conversions-chatbot",
+  "private": true,
+  "workspaces": ["shared", "server", "widget"],
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w server\" \"npm run dev -w widget\"",
+    "build": "npm run build -w shared && npm run build -w widget && npm run build -w server",
+    "start": "npm run start -w server"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "typescript": "^5.4.0"
+  }
+}
